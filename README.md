@@ -34,30 +34,30 @@ When you ask a question in the chat UI, the system retrieves relevant doc chunks
 
 ```mermaid
 flowchart LR
-    subgraph User
-        UI[FastHTML Chat UI<br/>:8788]
+    subgraph userArea ["User"]
+        UI["FastHTML Chat UI<br/>port 8788"]
     end
 
-    subgraph Backend
-        API[FastAPI<br/>:8000]
+    subgraph backendArea ["Backend"]
+        API["FastAPI<br/>port 8000"]
         RAG[RAG Pipeline]
         EMB[fastembed]
     end
 
-    subgraph Storage
-        QD[(Qdrant<br/>:6333)]
+    subgraph storageArea ["Storage"]
+        QD[("Qdrant<br/>port 6333")]
     end
 
-    subgraph Inference
-        VLLM[vLLM<br/>:8002]
+    subgraph inferenceArea ["Inference"]
+        VLLM["vLLM<br/>port 8002"]
     end
 
-    UI -->|POST /chat| API
+    UI -->|POST chat| API
     API --> RAG
     RAG --> EMB
     EMB -->|query vector| QD
     QD -->|top-k chunks| RAG
-    RAG -->|prompt + context| VLLM
+    RAG -->|prompt and context| VLLM
     VLLM -->|answer| RAG
     RAG --> API
     API --> UI
@@ -69,35 +69,35 @@ Documentation is crawled once (or monthly), processed through three stages, then
 
 ```mermaid
 flowchart TD
-    subgraph Sources
+    subgraph sourcesArea ["Sources"]
         K8S[kubernetes.io/docs]
         DOCK[docs.docker.com]
     end
 
-    subgraph Stage 0 — Crawl
-        CRAWL[BFS Crawler<br/>rate-limited]
-        RAW["data/raw/html/{source}/"]
-        MAN["data/raw/{source}_manifest.json"]
+    subgraph stage0 ["Stage 0 - Crawl"]
+        CRAWL["BFS Crawler<br/>rate-limited"]
+        RAW["data/raw/html/"]
+        MAN["data/raw/manifest.json"]
     end
 
-    subgraph Stage 1 — Extract
-        EXT[Parse HTML<br/>title, headings, body]
+    subgraph stage1 ["Stage 1 - Extract"]
+        EXT["Parse HTML<br/>title, headings, body"]
         EXOUT["data/processed/extracted/"]
     end
 
-    subgraph Stage 2 — Clean
-        CLN[Normalize text<br/>add source URL]
+    subgraph stage2 ["Stage 2 - Clean"]
+        CLN["Normalize text<br/>add source URL"]
         CLOUT["data/processed/cleaned/"]
     end
 
-    subgraph Stage 3 — Chunk
-        CHK[Split by headings<br/>overlap long sections]
+    subgraph stage3 ["Stage 3 - Chunk"]
+        CHK["Split by headings<br/>overlap long sections"]
         CHOUT["data/processed/chunks/chunks.jsonl"]
     end
 
-    subgraph Index
+    subgraph indexArea ["Index"]
         SYNC[sync_docs.py]
-        QD[(Qdrant collection<br/>documents)]
+        QD[("Qdrant collection documents")]
     end
 
     K8S --> CRAWL
@@ -115,21 +115,21 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant F as FastHTML :8788
-    participant A as FastAPI :8000
+    participant F as FastHTML_8788
+    participant A as FastAPI_8000
     participant E as fastembed
     participant Q as Qdrant
-    participant V as vLLM :8002
+    participant V as vLLM_8002
 
     U->>F: Submit question
-    F->>A: POST /chat/ {message}
+    F->>A: POST /chat with message
     A->>E: Embed query
-    E->>Q: Vector similarity search (top-k)
-    Q-->>A: Relevant chunks + metadata
-    A->>V: Prompt with context + question
+    E->>Q: Vector similarity search
+    Q-->>A: Relevant chunks and metadata
+    A->>V: Prompt with context and question
     V-->>A: Generated answer
-    A-->>F: {answer, sources}
-    F-->>U: Display answer + source cards
+    A-->>F: Answer and sources
+    F-->>U: Display answer and source cards
 ```
 
 ### Deployment layout (Docker)
@@ -138,15 +138,15 @@ RAG services use an isolated Docker network. Only Qdrant and vLLM publish ports.
 
 ```mermaid
 flowchart TB
-    subgraph Host["Your machine"]
-        subgraph RAGNet["rag-project-net"]
-            QD[rag-qdrant<br/>6333]
-            VLLM[rag-vllm<br/>8002]
-            SCHED[rag-monthly-scheduler<br/>no ports]
+    subgraph hostArea ["Your machine"]
+        subgraph ragNet ["rag-project-net"]
+            QD["rag-qdrant<br/>port 6333"]
+            VLLM["rag-vllm<br/>port 8002"]
+            SCHED["rag-monthly-scheduler<br/>no ports"]
         end
 
-        API[FastAPI :8000<br/>Python venv]
-        UI[FastHTML :8788<br/>Python venv]
+        API["FastAPI port 8000<br/>Python venv"]
+        UI["FastHTML port 8788<br/>Python venv"]
     end
 
     UI --> API
