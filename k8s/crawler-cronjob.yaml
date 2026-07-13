@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rag-doc-sync-monthly
+spec:
+  schedule: "0 3 1 * *"  # 1st of every month at 03:00 UTC
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: sync
+              image: rag-crawler:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: QDRANT_HOST
+                  value: rag-qdrant
+                - name: QDRANT_PORT
+                  value: "6333"
+                - name: QDRANT_COLLECTION
+                  value: documents
+              command:
+                - python
+                - -m
+                - scripts.sync_docs
+              volumeMounts:
+                - name: data
+                  mountPath: /app/data
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: rag-data-pvc

@@ -1,0 +1,115 @@
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+
+# =============================================================================
+# Environment & secrets (never commit)
+# =============================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets/
+
+# =============================================================================
+# Testing & coverage
+# =============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# =============================================================================
+# Type checkers & linters
+# =============================================================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pytype/
+
+# =============================================================================
+# IDE & editors
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =============================================================================
+# Application runtime (generated locally)
+# =============================================================================
+*.log
+logs/
+.sesskey
+data/sync_checkpoint.json
+
+# =============================================================================
+# Data artifacts (keep folder structure via .gitkeep only)
+# Crawled HTML and processed JSON are reproducible — do not commit
+# =============================================================================
+data/raw/html/**
+!data/raw/html/.gitkeep
+!data/raw/.gitkeep
+data/raw/*_manifest.json
+data/processed/**
+!data/processed/.gitkeep
+!data/processed/**/.gitkeep
+
+# =============================================================================
+# ML / model caches (downloaded at runtime, large)
+# =============================================================================
+models/
+.cache/
+*.onnx
+*.bin
+*.safetensors
+
+# =============================================================================
+# Docker (local overrides only)
+# =============================================================================
+docker-compose.override.yml
+docker-compose.local.yml

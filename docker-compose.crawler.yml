@@ -1,0 +1,54 @@
+# Monthly doc sync — isolated RAG stack only.
+#
+# - No published ports (will NOT touch :8787 dashboard or :8001 scheduler)
+# - Uses existing rag-qdrant on rag-project-net
+# - Does not join ai_sniper_bot_sol_base_default network
+#
+# One-off sync (reuse existing crawl data):
+#   docker compose -f docker-compose.crawler.yml run --rm doc-sync --skip-crawl
+#
+# Full sync (crawl + process + Qdrant):
+#   docker compose -f docker-compose.crawler.yml run --rm doc-sync
+#
+# Start monthly scheduler (1st of month, 03:00 UTC):
+#   docker compose -f docker-compose.crawler.yml up -d monthly-scheduler
+
+networks:
+  rag-project-net:
+    external: true
+
+services:
+  doc-sync:
+    build:
+      context: .
+      dockerfile: docker/crawler/Dockerfile
+    container_name: rag-doc-sync
+    networks:
+      - rag-project-net
+    environment:
+      QDRANT_HOST: rag-qdrant
+      QDRANT_PORT: 6333
+      QDRANT_COLLECTION: documents
+    volumes:
+      - ./data:/app/data
+    # No ports — cannot conflict with 8787 or 8001
+    profiles: ["manual"]
+    entrypoint: ["python", "-m", "scripts.sync_docs"]
+    command: []
+
+  monthly-scheduler:
+    build:
+      context: .
+      dockerfile: docker/crawler/Dockerfile
+    container_name: rag-monthly-scheduler
+    networks:
+      - rag-project-net
+    environment:
+      QDRANT_HOST: rag-qdrant
+      QDRANT_PORT: 6333
+      QDRANT_COLLECTION: documents
+    volumes:
+      - ./data:/app/data
+    # No ports — safe alongside other containers
+    restart: unless-stopped
+    command: ["python", "-m", "scripts.scheduler"]
