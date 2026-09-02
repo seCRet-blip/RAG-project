@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sniper-authority-ingest-monthly
+spec:
+  schedule: "0 3 1 * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: ingest
+              image: rag-authority:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: QDRANT_HOST
+                  value: rag-qdrant
+                - name: QDRANT_PORT
+                  value: "6333"
+                - name: QDRANT_COLLECTION
+                  value: sniper_authority
+                - name: BOT_REPO_ROOT
+                  value: /bot
+              command:
+                - python
+                - -m
+                - scripts.ingest_authority
+              volumeMounts:
+                - name: data
+                  mountPath: /app/data
+                - name: bot
+                  mountPath: /bot
+                  readOnly: true
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: rag-data-pvc
+            - name: bot
+              persistentVolumeClaim:
+                claimName: sniper-bot-pvc

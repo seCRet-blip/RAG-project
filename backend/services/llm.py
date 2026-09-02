@@ -1,6 +1,6 @@
 """vLLM OpenAI-compatible client (local, low VRAM)."""
 
-from openai import AsyncOpenAI
+from openai import APIConnectionError, APIStatusError, AsyncOpenAI, BadRequestError
 
 
 class VLLMClient:
@@ -12,7 +12,7 @@ class VLLMClient:
         )
         self._model = model
 
-    async def generate(self, prompt: str, max_tokens: int = 256) -> str:
+    async def generate(self, prompt: str, max_tokens: int = 160) -> str:
         try:
             response = await self._client.chat.completions.create(
                 model=self._model,
@@ -20,11 +20,17 @@ class VLLMClient:
                 max_tokens=max_tokens,
                 temperature=0.2,
             )
-        except Exception as exc:
+        except BadRequestError as exc:
+            raise RuntimeError(
+                f"vLLM rejected the prompt (often context too long for 2048-token model): {exc}"
+            ) from exc
+        except APIConnectionError as exc:
             raise RuntimeError(
                 f"vLLM not reachable at {self._client.base_url}. "
-                "Start it with: docker compose --profile vllm up -d vllm"
+                "Start the local vLLM service (rag-vllm on port 8002)."
             ) from exc
+        except APIStatusError as exc:
+            raise RuntimeError(f"vLLM error {exc.status_code}: {exc.message}") from exc
 
         return response.choices[0].message.content or ""
 

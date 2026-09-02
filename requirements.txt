@@ -15,11 +15,12 @@ fastembed>=0.5.0
 openai>=1.55.0
 httpx>=0.28.0
 
-# Document processing & crawling (all free / local)
+# Document processing & authority ingest (all free / local)
 pypdf>=5.1.0
 python-multipart>=0.0.17
 beautifulsoup4>=4.12.0
 lxml>=5.3.0
+PyYAML>=6.0.0
 
 # Dev
 pytest>=8.3.0

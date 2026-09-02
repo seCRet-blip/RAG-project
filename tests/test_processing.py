@@ -19,27 +19,27 @@ def test_split_into_sections():
 
 def test_chunk_document_preserves_metadata():
     doc = CleanedDocument(
-        source="docker",
-        url="https://docs.docker.com/reference/dockerfile/",
-        title="Dockerfile reference",
-        text="The ENTRYPOINT instruction sets the default executable. " * 30,
+        source="docs-ai",
+        url="docs/ai/10_INVARIANTS.md",
+        title="Invariants",
+        text="SOL train and serve footing must match. " * 30,
         word_count=150,
     )
     chunks = chunk_document(doc, chunk_size=200, chunk_overlap=40)
     assert len(chunks) >= 1
-    assert chunks[0].source == "docker"
-    assert "ENTRYPOINT" in chunks[0].text
+    assert chunks[0].source == "docs-ai"
+    assert "footing" in chunks[0].text
 
 
 def test_clean_document_adds_source_url():
     extracted = ExtractedDocument(
-        source="docker",
-        url="https://docs.docker.com/engine/network/",
-        title="Docker networking",
+        source="docs-ai",
+        url="docs/ai/08_EVAL_AND_MEASUREMENT.md",
+        title="Eval",
         headings=["Overview"],
-        body="Bridge networks are the default.",
-        raw_file="data/raw/html/docker/test.html",
+        body="Use direction_correct_close and exclude GARBAGE rows.",
+        raw_file="docs/ai/08_EVAL_AND_MEASUREMENT.md",
     )
     cleaned = clean_document(extracted)
-    assert "docs.docker.com" in cleaned.text
-    assert "Bridge networks" in cleaned.text
+    assert "direction_correct_close" in cleaned.text
+    assert "GARBAGE" in cleaned.text

@@ -98,6 +98,8 @@ data/raw/*_manifest.json
 data/processed/**
 !data/processed/.gitkeep
 !data/processed/**/.gitkeep
+data/authority/**
+!data/authority/.gitkeep
 
 # =============================================================================
 # ML / model caches (downloaded at runtime, large)

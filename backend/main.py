@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes import chat, documents, health
 
-app = FastAPI(title="RAG API", version="0.2.0")
+app = FastAPI(title="Docker & Kubernetes RAG", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,

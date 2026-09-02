@@ -1,11 +1,8 @@
-# RAG project services — isolated from other Docker stacks.
+# RAG services — Qdrant + optional vLLM
 #
-# IMPORTANT: Do not use ports 8787 (dashboard) or 8001 (multi-asset-scheduler).
+# Ports: do not use 8787 (sniper dashboard) or 8001 (sniper scheduler API).
 #
-# Start vLLM (small model, ~1-2 GB VRAM):
 #   docker compose --profile vllm up -d vllm
-#
-# Qdrant (only if rag-qdrant is not already running):
 #   docker compose --profile qdrant up -d qdrant
 
 networks:
@@ -33,7 +30,7 @@ services:
     networks:
       - rag-project-net
     ports:
-      - "8002:8000"  # 8001 is used by multi-asset-scheduler
+      - "8002:8000"
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     command: >

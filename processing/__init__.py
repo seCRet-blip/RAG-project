@@ -1,1 +1,1 @@
-"""Data processing pipeline — extract, clean, and chunk crawled docs."""
+"""Optional text processing helpers (authority ingest uses authority/)."""

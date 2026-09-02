@@ -1,0 +1,157 @@
+# Sniper Bot Authority RAG — ingest manifest
+# Point BOT_REPO_ROOT (env or .env) at the AI sniper bot repository.
+
+bot_repo_root: ${BOT_REPO_ROOT}
+
+collection: sniper_authority
+
+# Namespaces excluded from default retrieval
+default_exclude:
+  - handoff-secondary
+  - web-generic
+  - footgun
+
+sources:
+  # --- Tier A: always on ---
+  - id: docs-ai
+    namespace: docs-ai
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    globs:
+      - docs/ai/*.md
+    chunk_strategy: markdown_sections
+
+  - id: compose-live
+    namespace: compose-live
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    paths:
+      - docker-compose.multi_asset.yml
+    chunk_strategy: compose_services
+
+  - id: config-train
+    namespace: config-train
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    paths:
+      - workflows/config/retrain_config.yaml
+    chunk_strategy: yaml_sections
+
+  - id: contracts
+    namespace: contracts
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    paths:
+      - contracts/feature_contract_sol.txt
+      - contracts/feature_contract_ltc.txt
+    chunk_strategy: whole_file
+    asset_from_filename: true
+
+  - id: state-metadata
+    namespace: state-live
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    paths:
+      - models/sol/deployment_metadata.json
+      - models/ltc/deployment_metadata.json
+      - reports/sol_live_footing.json
+      - reports/retrain_promotion_summary.json
+    chunk_strategy: whole_file
+    asset_from_path: true
+
+  - id: state-live-card
+    namespace: state-live
+    enabled: true
+    default_retrieve: true
+    freshness: generated
+    generated: true
+    output: data/authority/rag_live_card.md
+    chunk_strategy: whole_file
+
+  # --- Tier B: code-critical slices ---
+  - id: code-critical
+    namespace: code-critical
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    chunk_strategy: code_slices
+    slices:
+      - path: src/btc_regime_encoding.py
+        symbols:
+          - CANONICAL_BTC_REGIME
+          - sniper_btc_real_categories_enabled
+          - encode_btc_regime
+          - encode_btc_trending_flag
+        asset: BOTH
+      - path: src/sol_footing.py
+        symbols: [footing, stationariz, block]
+        asset: SOL
+      - path: src/deploy_boundary.py
+        symbols: [prediction_id, post_deploy, filter, direction_correct]
+        asset: BOTH
+      - path: src/feature_stationarization.py
+        symbols: [STABLE_CORE_SOL, WINDOW, stationar]
+        asset: SOL
+      - path: src/retrain_contracts.py
+        symbols: [PROTECTED_LONG_FEATURES, BTC, mandatory]
+        asset: BOTH
+      - path: workflows/phase5_deployment.py
+        symbols: [gate, FORCE_REGIME_FIX, bypass, order]
+        asset: BOTH
+      - path: live_ensemble_prediction.py
+        symbols: [BTC, stationariz, encode_btc, overlay, SNIPER_]
+        asset: BOTH
+        max_chars: 12000
+      - path: scripts/training/train_candidates.py
+        symbols: [dataset, encode_btc, footing, resolve]
+        asset: BOTH
+        max_chars: 8000
+      - path: scripts/features/generate_btc_features.py
+        symbols: [regime, btc_, bucket]
+        asset: BOTH
+        max_chars: 6000
+
+  - id: tests-parity
+    namespace: tests-parity
+    enabled: true
+    default_retrieve: true
+    freshness: repo-file
+    globs:
+      - tests/test_btc_regime_encoding.py
+      - tests/test_*footing*.py
+      - tests/test_*parity*.py
+    chunk_strategy: whole_file
+
+  # --- Tier D: secondary (opt-in) ---
+  - id: handoff-secondary
+    namespace: handoff-secondary
+    enabled: true
+    default_retrieve: false
+    freshness: repo-file_stale_numbers_possible
+    paths:
+      - handoff_2026_06_12_stationarity.md
+      - handOff.md
+    chunk_strategy: markdown_sections
+
+  # --- Tier E: footgun (never default) ---
+  - id: footgun
+    namespace: footgun
+    enabled: false
+    default_retrieve: false
+    freshness: dangerous
+    globs:
+      - workflows/config/retrain_config_ltc_experiment.yaml
+      - docs/archive/**
+    chunk_strategy: whole_file
+
+  # --- web-generic: intentionally disabled ---
+  - id: web-generic
+    namespace: web-generic
+    enabled: false
+    default_retrieve: false
+    note: Opt-in official lib docs only; not ingested in v1.
